@@ -14,7 +14,7 @@ export async function registerRoutes(
   });
 
   app.get(api.documents.get.path, async (req, res) => {
-    const doc = await storage.getDocument(Number(req.params.id));
+    const doc = await storage.getDocument(req.params.id);
     if (!doc) {
       return res.status(404).json({ message: 'Document not found' });
     }
@@ -40,11 +40,11 @@ export async function registerRoutes(
   app.put(api.documents.update.path, async (req, res) => {
     try {
       const input = api.documents.update.input.parse(req.body);
-      const existing = await storage.getDocument(Number(req.params.id));
+      const existing = await storage.getDocument(req.params.id);
       if (!existing) {
         return res.status(404).json({ message: 'Document not found' });
       }
-      const doc = await storage.updateDocument(Number(req.params.id), input);
+      const doc = await storage.updateDocument(req.params.id, input);
       res.json(doc);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -58,11 +58,11 @@ export async function registerRoutes(
   });
 
   app.delete(api.documents.delete.path, async (req, res) => {
-    const existing = await storage.getDocument(Number(req.params.id));
+    const existing = await storage.getDocument(req.params.id);
     if (!existing) {
       return res.status(404).json({ message: 'Document not found' });
     }
-    await storage.deleteDocument(Number(req.params.id));
+    await storage.deleteDocument(req.params.id);
     res.status(204).send();
   });
 
