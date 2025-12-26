@@ -6,8 +6,21 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
 // Extend schema for validation messages
@@ -27,14 +40,13 @@ interface DocumentEditorProps {
   isSubmitting: boolean;
 }
 
-export function DocumentEditor({ 
-  open, 
-  onOpenChange, 
-  initialData, 
-  onSubmit, 
-  isSubmitting 
+export function DocumentEditor({
+  open,
+  onOpenChange,
+  initialData,
+  onSubmit,
+  isSubmitting,
 }: DocumentEditorProps) {
-  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -81,9 +93,11 @@ export function DocumentEditor({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="flex-1 flex flex-col min-h-0"
+          >
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <FormField
@@ -93,10 +107,10 @@ export function DocumentEditor({
                       <FormItem>
                         <FormLabel>Document Title</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="e.g., Getting Started Guide" 
-                            className="text-lg font-medium" 
-                            {...field} 
+                          <Input
+                            placeholder="e.g., Getting Started Guide"
+                            className="text-lg font-medium"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -129,10 +143,10 @@ export function DocumentEditor({
                   <FormItem className="flex-1 flex flex-col min-h-[400px]">
                     <FormLabel>Content (Markdown)</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="# Start writing your documentation here..." 
-                        className="flex-1 min-h-[300px] font-mono text-sm leading-relaxed resize-none p-4" 
-                        {...field} 
+                      <Textarea
+                        placeholder="# Start writing your documentation here..."
+                        className="flex-1 min-h-[300px] font-mono text-sm leading-relaxed resize-none p-4"
+                        {...field}
                       />
                     </FormControl>
                     <div className="text-xs text-muted-foreground text-right pt-1">
@@ -145,16 +159,16 @@ export function DocumentEditor({
             </div>
 
             <DialogFooter className="px-6 py-4 border-t border-border bg-muted/20">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
                 className="bg-accent hover:bg-accent/90 text-white min-w-[120px]"
               >
@@ -163,8 +177,10 @@ export function DocumentEditor({
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
+                ) : initialData ? (
+                  "Update Document"
                 ) : (
-                  initialData ? "Update Document" : "Create Document"
+                  "Create Document"
                 )}
               </Button>
             </DialogFooter>
