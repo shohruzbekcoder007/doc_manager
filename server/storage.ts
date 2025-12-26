@@ -1,75 +1,42 @@
-import { ObjectId } from "mongodb";
-import { getDatabase } from "./db";
-import type { Document, InsertDocument, UpdateDocumentRequest } from "@shared/schema";
+import { documents, type Document, type InsertDocument, type UpdateDocumentRequest } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getDocuments(): Promise<Document[]>;
-  getDocument(id: string): Promise<Document | undefined>;
+  getDocument(id: number): Promise<Document | undefined>;
   createDocument(doc: InsertDocument): Promise<Document>;
-  updateDocument(id: string, doc: UpdateDocumentRequest): Promise<Document>;
-  deleteDocument(id: string): Promise<void>;
+  updateDocument(id: number, doc: UpdateDocumentRequest): Promise<Document>;
+  deleteDocument(id: number): Promise<void>;
 }
 
-export class MongoStorage implements IStorage {
+export class DatabaseStorage implements IStorage {
   async getDocuments(): Promise<Document[]> {
-    const db = await getDatabase();
-    const docs = await db
-      .collection("documents")
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
-    return docs.map((doc: any) => ({
-      ...doc,
-      id: doc._id.toString(),
-    }));
+    return await db.select().from(documents).orderBy(desc(documents.createdAt));
   }
 
-  async getDocument(id: string): Promise<Document | undefined> {
-    const db = await getDatabase();
-    const doc = await db.collection("documents").findOne({
-      _id: new ObjectId(id),
-    });
-    if (!doc) return undefined;
-    return {
-      ...doc,
-      id: doc._id.toString(),
-    };
+  async getDocument(id: number): Promise<Document | undefined> {
+    const [doc] = await db.select().from(documents).where(eq(documents.id, id));
+    return doc;
   }
 
   async createDocument(insertDoc: InsertDocument): Promise<Document> {
-    const db = await getDatabase();
-    const result = await db.collection("documents").insertOne({
-      ...insertDoc,
-      createdAt: new Date().toISOString(),
-    });
-    const doc = await db.collection("documents").findOne({
-      _id: result.insertedId,
-    });
-    return {
-      ...doc,
-      id: doc!._id.toString(),
-    };
+    const [doc] = await db.insert(documents).values(insertDoc).returning();
+    return doc;
   }
 
-  async updateDocument(id: string, updates: UpdateDocumentRequest): Promise<Document> {
-    const db = await getDatabase();
-    const result = await db.collection("documents").findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: updates },
-      { returnDocument: "after" }
-    );
-    return {
-      ...result.value,
-      id: result.value!._id.toString(),
-    };
+  async updateDocument(id: number, updates: UpdateDocumentRequest): Promise<Document> {
+    const [doc] = await db
+      .update(documents)
+      .set(updates)
+      .where(eq(documents.id, id))
+      .returning();
+    return doc;
   }
 
-  async deleteDocument(id: string): Promise<void> {
-    const db = await getDatabase();
-    await db.collection("documents").deleteOne({
-      _id: new ObjectId(id),
-    });
+  async deleteDocument(id: number): Promise<void> {
+    await db.delete(documents).where(eq(documents.id, id));
   }
 }
 
-export const storage = new MongoStorage();
+export const storage = new DatabaseStorage();

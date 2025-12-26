@@ -1,19 +1,22 @@
+import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const insertDocumentSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  content: z.string().min(1, "Content is required"),
-  category: z.string().default("General"),
-  order: z.number().default(0),
+export const documents = pgTable("documents", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull().default("General"),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const insertDocumentSchema = createInsertSchema(documents).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
-
-export interface Document extends InsertDocument {
-  _id: string;
-  id: string;
-  createdAt: string;
-}
-
 export type CreateDocumentRequest = InsertDocument;
 export type UpdateDocumentRequest = Partial<InsertDocument>;
